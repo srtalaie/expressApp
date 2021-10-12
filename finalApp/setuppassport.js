@@ -2,7 +2,7 @@ let passport = require("passport");
 
 let User = require("./models/user");
 
-modeule.exports = () => {
+module.exports = () => {
     passport.serializeUser((user, done) => {
         done(null, user._id);
     });
