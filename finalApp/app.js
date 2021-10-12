@@ -5,12 +5,14 @@ let bodyParser = require("body-parser");
 let cookieParser = require("cookie-parser");
 let session = require("express-session");
 let flash = require("connect-flash");
+let passport = require("passport");
 
+let setUpPassport = require("./setuppassport.js");
 let routes = require("./routes");
 
 let app = express();
-
 mongoose.connect("mongodb://localhost:27017/test");
+setUpPassport();
 
 app.set("port", process.env.PORT || 3000);
 
@@ -25,6 +27,9 @@ app.use(session({
     saveUninitialized: true
 }));
 app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(routes);
 
