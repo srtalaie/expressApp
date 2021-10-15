@@ -7,13 +7,20 @@ let userSchema = mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
-    displayName: String,
-    bio: String
+    displayName: { type: String },
+    bio: { type: String }
 });
 
-userSchema.methods.name = () => {
+userSchema.methods.name = function(){
     return this.displayName || this.username
 };
+
+userSchema.methods.checkPassword = function(guess, done){
+    if (!this.password) { throw new Error('No user Password') }
+    bcrypt.compare(guess, this.password, (err, isMatch) => {
+        done(err, isMatch);
+    });
+}
 
 let noop = function() {};
 
@@ -31,12 +38,6 @@ userSchema.pre("save", function(done){
             done();
         });
     });
-
-    userSchema.methods.checkPassword = (guess, done) => {
-        bcrypt.compare(guess, this.password, function(err, isMatch){
-            done(err, isMatch);
-        });
-    }
 });
 
 let User = mongoose.model("User", userSchema);

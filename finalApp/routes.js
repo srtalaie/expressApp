@@ -12,6 +12,15 @@ router.use((req, res, next) => {
     next();
 });
 
+function ensureAuthenticated (req, res, next){
+    if (req.isAuthenticated()) {
+        next();
+    } else {
+        req.flash("info", "You must be logged in to see this page.");
+        res.redirect("/login");
+    }
+}
+
 router.get("/", (req, res, next) => {
     User.find()
         .sort({ createdAt: "descending" })
@@ -56,6 +65,42 @@ router.get("/users/:username", (req, res, next) => {
         if(!user) { return next(404) }
         res.render("profile", { user: user });
     });
+});
+
+//Login
+router.get("/login", (req, res) => {
+    res.render("login");
+});
+
+router.post("/login", passport.authenticate("login", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true
+}));
+
+//Log out
+router.get("/logout", (req, res) => {
+    req.logout();
+    res.redirect("/");
+});
+
+//Edit
+router.get("/edit", ensureAuthenticated, (req, res) => {
+    res.render("edit");
+});
+
+router.post("/edit", ensureAuthenticated, (req, res, next) => {
+    req.user.displayName = req.body.displayname;
+    req.user.bio = req.body.bio;
+    User.findOneAndUpdate({ username: req.user.username }, { displayName: req.user.displayName, bio: req.user.bio}, (err) => {
+        if (err) {
+            next(err);
+            return;
+        }
+        req.flash("info", "Profile updated!");
+        res.redirect("/edit");
+    });
+    req.user.save();
 });
 
 module.exports = router;
