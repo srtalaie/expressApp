@@ -6,6 +6,9 @@ let cookieParser = require("cookie-parser");
 let session = require("express-session");
 let flash = require("connect-flash");
 let passport = require("passport");
+let enforceSSL = require('express-enforces-ssl');
+let helmet = require('helmet');
+let ms = require('ms');
 
 let setUpPassport = require("./setuppassport.js");
 let routes = require("./routes");
@@ -13,6 +16,18 @@ let routes = require("./routes");
 let app = express();
 mongoose.connect("mongodb://localhost:27017/test");
 setUpPassport();
+
+app.disable('x-powered-by');
+
+app.use(helmet.xssFilter());
+app.use(helmet.frameguard("sameorigin"));
+app.use(helmet.noSniff());
+app.enable('trust proxy');
+app.use(enforceSSL());
+app.use(helmet.hsts({
+    maxAge: ms('2days'),
+    includeSubDomains: true
+}));
 
 app.set("port", process.env.PORT || 3000);
 
