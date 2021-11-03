@@ -17,6 +17,11 @@ let app = express();
 mongoose.connect("mongodb://localhost:27017/test");
 setUpPassport();
 
+app.disable('x-powered-by');
+
+app.use(helmet.xssFilter());
+app.use(helmet.frameguard("sameorigin"));
+app.use(helmet.noSniff());
 app.enable('trust proxy');
 app.use(enforceSSL());
 app.use(helmet.hsts({
